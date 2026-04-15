@@ -4095,29 +4095,6 @@ def build_centroid_image(mask, structure=None):
     return centroid_seed_map
 
 
-def downsample_mask_to_counts(mask_like, factor, mode="qupath"):
-    factor = max(1, int(round(factor)))
-
-    arr = np.asarray(mask_like)
-    h, w = arr.shape
-
-    if mode == "floor":
-        # Crop to divisible size (this trims when a remainder exists. This is the default in a lot of cases but it seems like QuPath does it differentky)
-        h2 = (h // factor) * factor
-        w2 = (w // factor) * factor
-        arr2 = arr[:h2, :w2]
-    else:
-        # QuPath-like extent preservation: keep full field of view using ceil shape, meaning that remainders become full pixels i believe
-        out_h = (h + factor - 1) // factor
-        out_w = (w + factor - 1) // factor
-        h2 = out_h * factor
-        w2 = out_w * factor
-        arr2 = np.pad(arr, ((0, h2 - h), (0, w2 - w)), mode="constant", constant_values=0)
-
-    ds_counts = arr2.reshape(h2 // factor, factor, w2 // factor, factor).sum(axis=(1, 3))
-    return ds_counts.astype(np.uint32)
-
-
 def create_affine(shape, voxel_res=None, center=True):
     """
     Creates an affine transformation matrix. Should be RAS+
